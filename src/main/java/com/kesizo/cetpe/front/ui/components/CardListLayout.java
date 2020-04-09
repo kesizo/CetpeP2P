@@ -27,7 +27,7 @@ public class CardListLayout extends HorizontalLayout {
         header.setSpacing(false);
         Span name = new Span(lprocess.getName());
         name.addClassName("name");
-        Span date = new Span(lprocess.getStartingDateTime());
+        Span date = new Span(lprocess.getStarting_date_time() !=null ? lprocess.getStarting_date_time().toString() : "Not available");
         date.addClassName("date");
         header.add(name, date);
 

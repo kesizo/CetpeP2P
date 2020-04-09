@@ -5,16 +5,16 @@ import java.util.Map;
 
 public class Status {
 
-private Integer id;
+private long id;
 private String name;
 private String description;
 private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-public Integer getId() {
+public long getId() {
 return id;
 }
 
-public void setId(Integer id) {
+public void setId(long id) {
 this.id = id;
 }
 
