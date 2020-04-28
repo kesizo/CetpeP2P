@@ -59,9 +59,7 @@
   width: calc(var(--lumo-icon-size-s) * 0.8);
 }
 
-.mylearningprocess-view .likes,
-.mylearningprocess-view .comments,
-.mylearningprocess-view-view .shares {
+.mylearningprocess-view .process-icon {
   color: var(--lumo-tertiary-text-color);
   font-size: var(--lumo-font-size-xs);
   margin-right: var(--lumo-space-l);

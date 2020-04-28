@@ -2,8 +2,7 @@ package com.kesizo.cetpe.front.controller.dtos;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class LearningProcess {
 
@@ -25,6 +24,8 @@ public class LearningProcess {
     private Integer weight_param_C;
     private Integer weight_param_D;
     private Integer weight_param_E;
+    private List<UserGroup> user_group_list;
+    private LearningSupervisor learning_supervisor;
     private Status learning_process_status;
 
     public Long getId() {
@@ -171,12 +172,44 @@ public class LearningProcess {
         this.weight_param_E = weight_param_E;
     }
 
+    public List<UserGroup> getUserGroupList() {
+        return user_group_list;
+    }
+
+    public void setUserGroupList(List<UserGroup> user_group_list) {
+        this.user_group_list = user_group_list;
+    }
+
+    public void addUserGroup(UserGroup userGroup) {
+        if (this.user_group_list == null) {
+            this.user_group_list = new ArrayList<>();
+        }
+        this.user_group_list.add(userGroup);
+    }
+
+    public void removeUserGroup(UserGroup userGroup) {
+        if (this.user_group_list == null) {
+            this.user_group_list = new ArrayList<>();
+        }
+        if (this.user_group_list.contains(userGroup)) {
+            this.user_group_list.remove(userGroup);
+        }
+    }
+
     public Status getLearning_process_status() {
         return learning_process_status;
     }
 
     public void setLearning_process_status(Status learning_process_status) {
         this.learning_process_status = learning_process_status;
+    }
+
+    public LearningSupervisor getLearning_supervisor() {
+        return learning_supervisor;
+    }
+
+    public void setLearning_supervisor(LearningSupervisor learning_supervisor) {
+        this.learning_supervisor = learning_supervisor;
     }
 
     @Override
@@ -200,6 +233,8 @@ public class LearningProcess {
                 ", weight_param_C=" + weight_param_C +
                 ", weight_param_D=" + weight_param_D +
                 ", weight_param_E=" + weight_param_E +
+                ", user_group_list=" + user_group_list +
+                ", learning_supervisor=" + learning_supervisor +
                 ", learning_process_status=" + learning_process_status +
                 '}';
     }
@@ -212,8 +247,8 @@ public class LearningProcess {
         mapOfProperties.put("id",this.id);
         mapOfProperties.put("name",this.name);
         mapOfProperties.put("description",this.description);
-        mapOfProperties.put("starting_date_time",this.starting_date_time.format(formatter));
-        mapOfProperties.put("end_date_time",this.end_date_time.format(formatter));
+        mapOfProperties.put("starting_date_time",this.starting_date_time!= null ? this.starting_date_time.format(formatter) : null);
+        mapOfProperties.put("end_date_time",this.end_date_time!= null ? this.end_date_time.format(formatter) : null);
         mapOfProperties.put("is_cal1_available",this.is_cal1_available);
         mapOfProperties.put("is_cal2_available",this.is_cal2_available);
         mapOfProperties.put("is_cal3_available",this.is_cal3_available);
@@ -227,7 +262,9 @@ public class LearningProcess {
         mapOfProperties.put("weight_param_C",this.weight_param_C);
         mapOfProperties.put("weight_param_D",this.weight_param_D);
         mapOfProperties.put("weight_param_E",this.weight_param_E);
-        mapOfProperties.put("learning_process_status_id",this.learning_process_status.getId());
+        mapOfProperties.put("user_group_list",this.user_group_list !=null ? this.user_group_list :null);
+        mapOfProperties.put("learning_supervisor_id",this.learning_supervisor !=null ? this.learning_supervisor.getUsername() :null);
+        mapOfProperties.put("learning_process_status_id",this.learning_process_status!=null ? this.learning_process_status.getId() :null);
 
         return mapOfProperties;
 

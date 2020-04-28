@@ -1,6 +1,6 @@
 package com.kesizo.cetpe.front.ui;
 
-import com.kesizo.cetpe.front.ui.views.mycollaborations.MyCollaborationsViewImpl;
+import com.kesizo.cetpe.front.ui.views.mycollaborations.MyCollaborationsView;
 import com.kesizo.cetpe.front.ui.views.mylearningprocess.MyLearningProcessesView;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -77,6 +77,7 @@ public class MainLayout extends AppLayout {
 
     private void createHeader() {
 
+
         H1 logo = new H1("P2P Assessment");
         logo.addClassName("logo");
 
@@ -95,7 +96,7 @@ public class MainLayout extends AppLayout {
 
     private void createDrawer() {
         RouterLink listLink = new RouterLink("My Assessments", MyLearningProcessesView.class);
-        RouterLink listLinkCollaborations = new RouterLink("P2P Collaborations", MyCollaborationsViewImpl.class);
+        RouterLink listLinkCollaborations = new RouterLink("P2P Collaborations", MyCollaborationsView.class);
 
         listLink.setHighlightCondition(HighlightConditions.sameLocation());
 

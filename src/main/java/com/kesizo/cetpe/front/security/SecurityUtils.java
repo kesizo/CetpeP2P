@@ -43,4 +43,19 @@ public final class SecurityUtils {
             && !(authentication instanceof AnonymousAuthenticationToken)
             && authentication.isAuthenticated();
     }
+
+
+    public static String getLoggedUserName() {
+
+        String userName = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+         if (authentication != null
+                && !(authentication instanceof AnonymousAuthenticationToken)
+                && authentication.isAuthenticated()) {
+             userName = authentication.getName();
+         }
+
+        return userName;
+    }
 }

@@ -3,8 +3,11 @@ package com.kesizo.cetpe.front.ui.views.mylearningprocess;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kesizo.cetpe.front.controller.client.LearningProcessClient;
 import com.kesizo.cetpe.front.controller.client.StatusClient;
+import com.kesizo.cetpe.front.controller.client.SupervisorClient;
 import com.kesizo.cetpe.front.controller.dtos.LearningProcess;
+import com.kesizo.cetpe.front.controller.dtos.LearningSupervisor;
 import com.kesizo.cetpe.front.controller.dtos.Status;
+import com.kesizo.cetpe.front.security.SecurityUtils;
 import com.kesizo.cetpe.front.ui.MainLayout;
 import com.kesizo.cetpe.front.ui.components.CardListLayout;
 import com.kesizo.cetpe.front.ui.views.mylearningprocess.form.LearningProcessForm;
@@ -22,6 +25,9 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -34,16 +40,21 @@ public class MyLearningProcessesView extends Div implements AfterNavigationObser
 
     private LearningProcessClient learningService;
     private StatusClient statusService;
+    private SupervisorClient supervisorService;
     private Grid<LearningProcess> grid;
     private HorizontalLayout buttonSet;
     private TextField filterText;
     private Button addLearningProcessButton;
     private LearningProcessForm form;
 
-    public MyLearningProcessesView(@Autowired LearningProcessClient learningService, @Autowired StatusClient statusService) {
+    @Autowired
+    private ObjectMapper mapper; // Used for converting Objects to/from JSON
+
+    public MyLearningProcessesView(@Autowired LearningProcessClient learningService, @Autowired StatusClient statusService,  @Autowired SupervisorClient supervisorService) {
 
         this.learningService = learningService;
         this.statusService = statusService;
+        this.supervisorService = supervisorService;
 
         setId("mylearningprocess-view");
         addClassName("mylearningprocess-view");
@@ -70,7 +81,7 @@ public class MyLearningProcessesView extends Div implements AfterNavigationObser
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
 
-        grid.setItems(learningService.getLearningProcess());
+        grid.setItems(learningService.getLearningProcessBySupervisorUsername(SecurityUtils.getLoggedUserName()));
     }
 
     private void configureLearningProcessSearchAndCreateActionArea() {
@@ -117,13 +128,27 @@ public class MyLearningProcessesView extends Div implements AfterNavigationObser
         this.form.getClose().addClickListener(event -> closeNewLearningProcess());
         this.form.getDelete().addClickListener(event -> deleteNewLearningProcess());
         this.form.getUpdate().addClickListener(event -> updateLearningProcess());
+        this.form.getConfig().addClickListener(event -> configLearningProcess());
+
+        LearningSupervisor currentSupervisor = supervisorService.learningSupervisorsByUsername(SecurityUtils.getLoggedUserName());
+        if (null==currentSupervisor) {
+            currentSupervisor = new LearningSupervisor();
+            currentSupervisor.setUsername(SecurityUtils.getLoggedUserName());
+            currentSupervisor.setFirstName(SecurityUtils.getLoggedUserName());
+            currentSupervisor.setLastName(SecurityUtils.getLoggedUserName());
+            currentSupervisor = supervisorService.create(currentSupervisor.toMap());
+        }
+
+        this.form.getSupervisorSelector().setItems(currentSupervisor);
+        this.form.getSupervisorSelector().setItemLabelGenerator(LearningSupervisor::getUsername);
+
         this.form.getStatusSelector().setItems(statusService.cetpeLearningProcessStatusIndex());
         this.form.getStatusSelector().setItemLabelGenerator(Status::getName);
     }
 
     private void updateList() {
 
-        grid.setItems(learningService.getLearningProcess()
+        grid.setItems(learningService.getLearningProcessBySupervisorUsername(SecurityUtils.getLoggedUserName())
                                       .stream()
                                       .filter(learningProcess -> learningProcess.getName().contains(filterText.getValue()))
                                       .collect(Collectors.toList()));
@@ -131,6 +156,8 @@ public class MyLearningProcessesView extends Div implements AfterNavigationObser
 
     private void toggleAddLearningProcessMenu(){
         this.form.resetFields();
+        this.form.getBinderNewLearningProcessForm().getBean().setLearning_supervisor(supervisorService.learningSupervisorsByUsername(SecurityUtils.getLoggedUserName()));
+        this.form.getSupervisorSelector().setValue(supervisorService.learningSupervisorsByUsername(SecurityUtils.getLoggedUserName()));
         this.form.setEditionMode(false);
         form.setVisible(!form.isVisible());
     }
@@ -144,9 +171,16 @@ public class MyLearningProcessesView extends Div implements AfterNavigationObser
         if (this.form.getBinderNewLearningProcessForm().isValid()) {
 
             //Using Jackson mapper
-            Map<String, String> learningProcessObjMapped = new ObjectMapper().convertValue(this.form.getBinderNewLearningProcessForm().getBean(), Map.class);
+            Map<String, Object> learningProcessObjMapped = mapper.convertValue(this.form.getBinderNewLearningProcessForm().getBean(), Map.class);
+            //Without Jackson mapper
+            //Map<String, Object> learningProcessObjMapped = this.form.getBinderNewLearningProcessForm().getBean().toMap();
 
-            if (null == learningService.create(learningProcessObjMapped)) {
+            if (learningProcessObjMapped==null) {
+                Notification notification = new Notification("Data input is null, please contact the administrator of the tool", 3000);
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                notification.open();
+            }
+            else if (null == learningService.create(learningProcessObjMapped)) {
                 Notification notification = new Notification("Validation succeeded but the operation fails, please contact the administrator of the tool", 3000);
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 notification.open();
@@ -154,7 +188,8 @@ public class MyLearningProcessesView extends Div implements AfterNavigationObser
                 Notification notification = new Notification("New learning process created", 3000);
                 notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 this.form.resetFields();
-                grid.setItems(learningService.getLearningProcess());
+                this.filterText.setValue("");
+                updateList();
                 notification.open();
             }
         }
@@ -169,8 +204,8 @@ public class MyLearningProcessesView extends Div implements AfterNavigationObser
 
         if (this.form.getBinderNewLearningProcessForm().isValid()) {
 
-            //Without Jackson mapper
-            Map<String, Object> learningProcessObjMapped = this.form.getBinderNewLearningProcessForm().getBean().toMap();
+            //Using Jackson mapper
+            Map<String, Object> learningProcessObjMapped = mapper.convertValue(this.form.getBinderNewLearningProcessForm().getBean(), Map.class);
 
             if (null == learningService.update(this.form.getBinderNewLearningProcessForm().getBean().getId().toString(),learningProcessObjMapped)) {
                 Notification notification = new Notification("Validation succeeded but update operation fails, please contact the administrator of the tool", 3000);
@@ -180,7 +215,9 @@ public class MyLearningProcessesView extends Div implements AfterNavigationObser
                 Notification notification = new Notification("Learning process successfully updated", 3000);
                 notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 this.form.resetFields();
-                grid.setItems(learningService.getLearningProcess());
+                this.form.setEditionMode(false);
+                this.filterText.setValue("");
+                updateList();
                 notification.open();
             }
         }
@@ -198,13 +235,37 @@ public class MyLearningProcessesView extends Div implements AfterNavigationObser
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
             notification.open();
         } else {
-            Notification notification = new Notification("Seleceted learning process successfully deleted ", 3000);
+            Notification notification = new Notification("Selected learning process successfully deleted ", 3000);
             notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
             this.form.resetFields();
-            grid.setItems(learningService.getLearningProcess());
+            this.filterText.setValue("");
+            updateList();
             form.setEditionMode(false);
             notification.open();
         }
     }
 
+    private void configLearningProcess() {
+
+        LearningProcess currentLearningProcess = learningService.getLearningProcessById(this.form.getBinderNewLearningProcessForm().getBean().getId().toString());
+        if (null==currentLearningProcess) {
+            Notification notification = new Notification("Config operation fails, please contact the administrator of the tool", 3000);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            notification.open();
+        } else {
+            Notification notification = new Notification("Accessing to rubric configuration ", 3000);
+            notification.addThemeVariants(NotificationVariant.LUMO_PRIMARY);
+
+            List<String> list = new ArrayList<>();
+            Map<String, List<String>> parametersMap = new HashMap<>();
+            list.add(currentLearningProcess.getId().toString());
+            parametersMap.put("learning_process_id", list);
+            QueryParameters qp = new QueryParameters(parametersMap);
+
+            form.getUI().ifPresent(ui ->
+                    ui.navigate("rubrics",qp));
+            notification.open();
+        }
+
+    }
 }

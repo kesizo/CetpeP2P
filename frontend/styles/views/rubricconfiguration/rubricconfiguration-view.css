@@ -1,0 +1,41 @@
+.rubricconfiguration-view .rubricconfiguration-buttonSet {
+  padding: calc(var(--lumo-space-s) * 1.5) var(--lumo-space-m);
+}
+
+.rubricconfiguration-view vaadin-grid {
+  line-height: var(--lumo-line-height-m);
+}
+
+.rubricconfiguration-view vaadin-grid,
+.rubricconfiguration-view vaadin-grid-cell-content {
+  background-color: var(--lumo-contrast-10pct);
+}
+
+.rubricconfiguration-view .card {
+  background-color: var(--lumo-base-color);
+  border-radius: var(--lumo-border-radius);
+  box-shadow: var(--lumo-box-shadow-xs);
+  padding: calc(var(--lumo-space-s) * 1.5) var(--lumo-space-m);
+}
+
+.rubricconfiguration-view .actions {
+  align-items: center;
+}
+
+.rubricconfiguration-view .content {
+    display: flex; /*  */
+    background-color: var(--lumo-contrast-10pct);
+}
+
+.rubricconfiguration-view .assessment-item-rubric-form {
+    padding: var(--lumo-space-m); /*  */
+    flex:1;
+    min-width: 55%;
+}
+
+@media all and (max-width: 1100px) { /*  */
+    .rubricconfiguration-view.editing .toolbar,
+    .rubricconfiguration-view.editing .grid-cards {
+        display: none;
+   }
+}

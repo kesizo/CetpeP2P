@@ -14,7 +14,7 @@ public interface LearningProcessClient {
     public List<LearningProcess> getLearningProcess();
 
     @PostMapping("/api/cetpe/lprocess")
-    public LearningProcess create(@RequestBody Map<String, String> body);
+    public LearningProcess create(@RequestBody Map<String, Object> body);
 
     @DeleteMapping("/api/cetpe/lprocess/{id}")
     public boolean delete(@PathVariable String id);
@@ -22,7 +22,16 @@ public interface LearningProcessClient {
     @PutMapping("/api/cetpe/lprocess/{id}")
     public LearningProcess update(@PathVariable String id, @RequestBody Map<String, Object> body);
 
+    @PutMapping("/api/cetpe/lprocess/usergroup/add/{id}")
+    public LearningProcess updateAddUserGroup(@PathVariable String id, @RequestBody Map<String, Object> body);
+
+    @PutMapping("/api/cetpe/lprocess/usergroup/remove/{id}")
+    public LearningProcess updateRemoveUserGroup(@PathVariable String id, @RequestBody Map<String, Object> body);
+
     @GetMapping("/api/cetpe/lprocess/{id}")
     public LearningProcess getLearningProcessById(@PathVariable String id);
+
+    @GetMapping("/api/cetpe/lprocess/supervisor/{username}")
+    public List<LearningProcess> getLearningProcessBySupervisorUsername(@PathVariable String username);
 }
 
